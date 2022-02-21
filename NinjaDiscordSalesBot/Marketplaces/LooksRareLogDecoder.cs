@@ -31,9 +31,9 @@ namespace NinjaDiscordSalesBot
 
         public bool IsOrderEventLog(TransactionReceiptLog log)
         {
-            var signature = (string)log.Topics[0];
+            var signature = ((string)log.Topics[0]).ToLower();
 
-            return log.Address == ContractAddress && (signature == TakerAskSignature || signature == TakerBidSignature);
+            return log.Address.ToLower() == ContractAddress && (signature == TakerAskSignature || signature == TakerBidSignature);
         }
 
         public MarketTransaction? GetTransactionInfo(TransactionReceiptLog log)
@@ -55,16 +55,6 @@ namespace NinjaDiscordSalesBot
                 var bytes = log.Data.HexToByteArray();
                 var amountBytes = bytes.Skip(5 * 32).Take(32).ToArray();
                 var priceBytes = bytes.Skip(6 * 32).Take(32).ToArray();
-
-                var addressDecoder = new AddressTypeDecoder();
-
-                var takerTopic = (string)log.Topics[1];
-
-                info.Buyer = addressDecoder.Decode<string>(takerTopic.HexToByteArray());
-
-                var makerTopic = (string)log.Topics[2];
-
-                info.Seller = addressDecoder.Decode<string>(makerTopic.HexToByteArray());
 
                 var intTypeDecoder = new IntTypeDecoder();
 

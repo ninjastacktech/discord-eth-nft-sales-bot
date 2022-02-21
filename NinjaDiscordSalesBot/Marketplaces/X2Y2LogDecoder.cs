@@ -5,38 +5,36 @@ using System.Numerics;
 
 namespace NinjaDiscordSalesBot
 {
-    public class OpenSeaLogDecoder : IMarketLogDecoder
+    public class X2Y2LogDecoder : IMarketLogDecoder
     {
-        // Event Logs (Name: "OrdersMatched")
+        // Event Logs (Name: "EvProfit")
         // topics[0] = signature
-        // topics[1] = inputs[2] = maker[:address]
-        // topics[2] = inputs[3] = taker[:address]
         //
         // Data:
-        // 1. buyHash[:bytes32]
-        // 2. sellHash[:bytes32]
-        // 3. price[:uint256]
+        // 1. itemHash[:bytes32]
+        // 2. currency[:address]
+        // 3. to[:address]
+        // 4. amount[:uint256]
 
-        public string Name { get; } = "OpenSea";
+        public string Name { get; } = "x2y2";
 
-        public string ContractAddress { get; } = "0x7f268357a8c2552623316e2562d90e642bb538e5"; //V2
-        //public string ContractAddress { get; } = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"; //V1
+        public string ContractAddress { get; } = "0x74312363e45dcaba76c59ec49a7aa8a65a67eed3";
 
-        private string OrdersMatchedSignature { get; } = "0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9";
+        private string EvProfitSignature { get; } = "0xe2c49856b032c255ae7e325d18109bc4e22a2804e2e49a017ec0f59f19cd447b";
 
         public bool IsOrderEventLog(TransactionReceiptLog log)
         {
-            return log.Address.ToLower() == ContractAddress && ((string)log.Topics[0]).ToLower() == OrdersMatchedSignature;
+            return log.Address.ToLower() == ContractAddress && ((string)log.Topics[0]).ToLower() == EvProfitSignature;
         }
 
         public MarketTransaction? GetTransactionInfo(TransactionReceiptLog log)
         {
-            if (log.Data == null || log.Data.Length < 3 * 32)
+            if (log.Data == null || log.Data.Length < 4 * 32)
             {
                 return null;
             }
 
-            if (log.Topics.Length < 3)
+            if (log.Topics.Length < 1)
             {
                 return null;
             }
@@ -46,7 +44,7 @@ namespace NinjaDiscordSalesBot
             try
             {
                 var bytes = log.Data.HexToByteArray();
-                var priceBytes = bytes.Skip(2 * 32).Take(32).ToArray();
+                var priceBytes = bytes.Skip(3 * 32).Take(32).ToArray();
 
                 var priceParameter = new IntTypeDecoder().Decode<BigInteger>(priceBytes);
 

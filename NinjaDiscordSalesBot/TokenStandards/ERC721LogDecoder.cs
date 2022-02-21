@@ -15,21 +15,30 @@ namespace NinjaDiscordSalesBot
 
         public string Name { get; } = "ERC-721";
 
-        public bool IsTransferEvent(string topic)
-        {
-            return Signature == topic;
-        }
-        
-        public int? GetTokenId(TransactionReceiptLog log)
+        public TokenMetadata? GetTokenMetadata(TransactionReceiptLog log)
         {
             if (log.Topics.Length < 4)
             {
                 return null;
             }
 
-            var topic = (string)log.Topics[3];
+            var from = (string)log.Topics[1];
+            var to = (string)log.Topics[2];
+            var tokenIdTopic = (string)log.Topics[3];
 
-            return new IntTypeDecoder().Decode<int>(topic.HexToByteArray());
+            var addressTypeDecoder = new AddressTypeDecoder();
+
+            return new TokenMetadata()
+            {
+                TokenId = new IntTypeDecoder().Decode<int>(tokenIdTopic.HexToByteArray()),
+                Seller = addressTypeDecoder.Decode<string>(from.HexToByteArray()),
+                Buyer = addressTypeDecoder.Decode<string>(to.HexToByteArray()),
+            };
+        }
+
+        public bool IsTransferEvent(string topic)
+        {
+            return Signature == topic.ToLower();
         }
     }
 }

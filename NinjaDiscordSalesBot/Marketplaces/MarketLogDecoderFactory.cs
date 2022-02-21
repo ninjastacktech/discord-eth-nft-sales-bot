@@ -6,6 +6,7 @@
         {
             new OpenSeaLogDecoder(),
             new LooksRareLogDecoder(),
+            new X2Y2LogDecoder(),
         };
 
         public static IMarketLogDecoder? GetMarketDecoder(string contractAddress)
