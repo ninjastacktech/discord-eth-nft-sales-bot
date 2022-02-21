@@ -23,7 +23,7 @@ namespace NinjaDiscordSalesBot
         {
             await _discordWebSocketClient.StartAsync();
 
-            _infuraWebSocketClient.OnTokenTransfer += async (transactionHash, tokenStandard) =>
+            _infuraWebSocketClient.OnTokenTransfer += async (transactionHash, tokenDecoder) =>
             {
                 TokenMetadata? tokenMetadata = new();
 
@@ -36,41 +36,44 @@ namespace NinjaDiscordSalesBot
                         return;
                     }
 
-                    var marketplaceContract = MarketplaceContractFactory.GetMarketplaceContract(txReceipt.To);
+                    var marketDecoder = MarketLogDecoderFactory.GetMarketDecoder(txReceipt.To);
 
-                    if (marketplaceContract == null)
+                    if (marketDecoder == null)
                     {
                         return;
                     }
 
-                    var transferLog = txReceipt.Logs.FirstOrDefault(x => tokenStandard.IsTransferEvent((string)x.Topics[0]));
+                    var transferLog = txReceipt.Logs.FirstOrDefault(x => tokenDecoder.IsTransferEvent((string)x.Topics[0]) && x.Address == _options.CollectionContractAddress);
 
                     if (transferLog == null)
                     {
                         return;
                     }
 
-                    tokenMetadata.TokenId = tokenStandard.GetTokenId(transferLog);
+                    tokenMetadata.TokenId = tokenDecoder.GetTokenId(transferLog);
 
                     if (tokenMetadata.TokenId == null)
                     {
                         return;
                     }
 
-                    var marketplaceLog = txReceipt.Logs.FirstOrDefault(x => x.Address == txReceipt.To);
+                    tokenMetadata.TokenStandard = tokenDecoder.Name;
+
+                    var marketplaceLog = txReceipt.Logs.FirstOrDefault(x => marketDecoder.IsOrderEventLog(x));
 
                     if (marketplaceLog == null)
                     {
                         return;
                     }
 
-                    var marketplaceInfo = marketplaceContract.GetTransactionInfo(marketplaceLog);
+                    var marketInfo = marketDecoder.GetTransactionInfo(marketplaceLog);
 
-                    if (marketplaceInfo != null)
+                    if (marketInfo != null)
                     {
-                        tokenMetadata.TotalPriceEth = marketplaceInfo.Price;
-                        tokenMetadata.Seller = marketplaceInfo.Seller;
-                        tokenMetadata.Buyer = marketplaceInfo.Buyer;
+                        tokenMetadata.Marketplace = marketDecoder.Name;
+                        tokenMetadata.TotalPriceEth = marketInfo.Price;
+                        tokenMetadata.Seller = marketInfo.Seller;
+                        tokenMetadata.Buyer = marketInfo.Buyer;
                     }
                 }
                 catch (Exception ex)

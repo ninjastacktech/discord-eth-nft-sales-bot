@@ -5,22 +5,33 @@ using System.Numerics;
 
 namespace NinjaDiscordSalesBot
 {
-    public class OpenSeaContract : IMarketplaceContract
+    public class OpenSeaLogDecoder : IMarketLogDecoder
     {
         // Event Logs (Name: "OrdersMatched")
         // topics[0] = signature
         // topics[1] = inputs[2] = maker[:address]
         // topics[2] = inputs[3] = taker[:address]
-        // data (buyHash[:bytes32], sellHash[:bytes32], price[:uint256])
+        //
+        // Data:
+        // 1. buyHash[:bytes32]
+        // 2. sellHash[:bytes32]
+        // 3. price[:uint256]
 
         public string Name { get; } = "OpenSea";
 
-        //public string ContractAddress { get; } = "0x7f268357a8c2552623316e2562d90e642bb538e5"; //V2
-        public string ContractAddress { get; } = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"; //V1
+        public string ContractAddress { get; } = "0x7f268357a8c2552623316e2562d90e642bb538e5"; //V2
+        //public string ContractAddress { get; } = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"; //V1
+
+        private string OrdersMatchedSignature { get; } = "0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9";
+
+        public bool IsOrderEventLog(TransactionReceiptLog log)
+        {
+            return log.Address == ContractAddress && (string)log.Topics[0] == OrdersMatchedSignature;
+        }
 
         public MarketTransaction? GetTransactionInfo(TransactionReceiptLog log)
         {
-            if (log.Data == null || log.Data.Length < 64)
+            if (log.Data == null || log.Data.Length < 3 * 32)
             {
                 return null;
             }
@@ -32,11 +43,11 @@ namespace NinjaDiscordSalesBot
 
             MarketTransaction? info = new();
 
-            var bytes = log.Data.HexToByteArray();
-            var priceBytes = bytes.Skip(64).Take(32).ToArray();
-
             try
             {
+                var bytes = log.Data.HexToByteArray();
+                var priceBytes = bytes.Skip(2 * 32).Take(32).ToArray();
+
                 var addressDecoder = new AddressTypeDecoder();
 
                 var makerTopic = (string)log.Topics[1];

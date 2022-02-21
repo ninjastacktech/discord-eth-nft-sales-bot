@@ -3,7 +3,7 @@ using Nethereum.Hex.HexConvertors.Extensions;
 
 namespace NinjaDiscordSalesBot
 {
-    public class ERC1155Token : IToken
+    public class ERC1155LogDecoder : ITokenLogDecoder
     {
         // Event Logs (Name: "TransferSingle")
         // topics[0] = signature
@@ -13,6 +13,8 @@ namespace NinjaDiscordSalesBot
         // data (id[:uint256], value[:uint256])
 
         public string Signature { get; } = "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62";
+
+        public string Name { get; } = "ERC-1155";
 
         public int? GetTokenId(TransactionReceiptLog log)
         {

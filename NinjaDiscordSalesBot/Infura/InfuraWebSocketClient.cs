@@ -11,7 +11,7 @@ namespace NinjaDiscordSalesBot
         private readonly string _apiKey;
         private readonly string _collectionContractAddress;
 
-        public event Func<string, IToken, Task>? OnTokenTransfer;
+        public event Func<string, ITokenLogDecoder, Task>? OnTokenTransfer;
 
         public InfuraWebSocketClient(string apiKey, string collectionContractAddress)
         {
@@ -55,9 +55,9 @@ namespace NinjaDiscordSalesBot
                     }
 
                     // Match token standard (ERC-721, ERC-1155) by the Transfer method's signature
-                    var tokenStandard = TokenFactory.GetToken(topic);
+                    var tokenDecoder = TokenLogDecoderFactory.GetTokenDecoder(topic);
 
-                    if (tokenStandard != null)
+                    if (tokenDecoder != null)
                     {
                         var txHash = ev?.SelectToken("transactionHash")?.ToString();
 
@@ -66,7 +66,7 @@ namespace NinjaDiscordSalesBot
                             return;
                         }
 
-                        await (OnTokenTransfer?.Invoke(txHash, tokenStandard) ?? Task.CompletedTask);
+                        await (OnTokenTransfer?.Invoke(txHash, tokenDecoder) ?? Task.CompletedTask);
                     }
                 }
                 catch (Exception ex)

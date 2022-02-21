@@ -10,6 +10,10 @@
 
         public int? TokenId { get; set; }
 
+        public string? TokenStandard { get; set; }
+
+        public string? Marketplace { get; set; }
+
         public string? CollectionName { get; set; }
 
         public string? ImageUrl { get; set; }
