@@ -23,10 +23,10 @@ namespace NinjaDiscordSalesBot
         {
             await _discordWebSocketClient.StartAsync();
 
-            TokenMetadata? tokenMetadata = null;
-
             _infuraWebSocketClient.OnTokenTransfer += async (transactionHash, tokenDecoder) =>
             {
+                TokenMetadata? tokenMetadata = null;
+
                 try
                 {
                     var txReceipt = await _infuraHttpClient.GetTransactionReceiptAsync(transactionHash);
@@ -53,7 +53,7 @@ namespace NinjaDiscordSalesBot
                         return;
                     }
 
-                    var tokenMetadata = tokenDecoder.GetTokenMetadata(transferLog);
+                    tokenMetadata = tokenDecoder.GetTokenMetadata(transferLog);
 
                     if (tokenMetadata?.TokenId == null)
                     {
