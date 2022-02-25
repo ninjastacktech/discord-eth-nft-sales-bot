@@ -6,22 +6,28 @@ namespace NinjaDiscordSalesBot
     {
         private readonly NinjaBotOptions _options;
         private readonly DiscordHttpClient _discordHttpClient;
-        private readonly DiscordWebSocketClient _discordWebSocketClient;
+        private readonly DiscordWebSocketClient? _discordWebSocketClient;
         private readonly InfuraWebSocketClient _infuraWebSocketClient;
         private readonly InfuraHttpClient _infuraHttpClient;
 
         public NinjaBot(NinjaBotOptions options)
         {
             _options = options;
-            _discordHttpClient = new DiscordHttpClient(botToken: _options.DiscordBotToken);
-            _discordWebSocketClient = new DiscordWebSocketClient(botToken: _options.DiscordBotToken);
+            
             _infuraWebSocketClient = new InfuraWebSocketClient(apiKey: _options.InfuraApiKey, collectionContractAddress: _options.CollectionContractAddress);
             _infuraHttpClient = new InfuraHttpClient(apiKey: _options.InfuraApiKey);
+
+            _discordHttpClient = new DiscordHttpClient(options: _options);
+
+            if (string.IsNullOrEmpty(_options.DiscordWebhookUrl))
+            {
+                _discordWebSocketClient = new DiscordWebSocketClient(botToken: _options.DiscordBotToken);
+            }
         }
 
         public async Task StartAsync()
         {
-            await _discordWebSocketClient.StartAsync();
+            await (_discordWebSocketClient?.StartAsync() ?? Task.CompletedTask);
 
             _infuraWebSocketClient.OnTokenTransfer += async (transactionHash, tokenDecoder) =>
             {
@@ -107,7 +113,7 @@ namespace NinjaDiscordSalesBot
 
         public async Task StopAsync()
         {
-            await _discordWebSocketClient.StopAsync();
+            await (_discordWebSocketClient?.StopAsync() ?? Task.CompletedTask);
 
             await _infuraWebSocketClient.StopAsync();
         }

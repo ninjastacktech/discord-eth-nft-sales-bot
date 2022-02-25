@@ -7,6 +7,8 @@ namespace NinjaDiscordSalesBot
 
         public string DiscordBotToken { get; set; }
 
+        public string DiscordWebhookUrl { get; set; }
+
         public string InfuraApiKey { get; set; }
 
         public string CollectionContractAddress { get; set; }
