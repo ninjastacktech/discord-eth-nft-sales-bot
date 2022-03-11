@@ -8,6 +8,6 @@
 
         bool IsTransferEvent(string topic);
 
-        TokenMetadata? GetTokenMetadata(TransactionReceiptLog log);
+        TokenTransferMetadata? GetTokenMetadata(TransactionReceiptLog log);
     }
 }

@@ -13,7 +13,7 @@ namespace NinjaDiscordSalesBot
         public NinjaBot(NinjaBotOptions options)
         {
             _options = options;
-            
+
             _infuraWebSocketClient = new InfuraWebSocketClient(apiKey: _options.InfuraApiKey, collectionContractAddress: _options.CollectionContractAddress);
             _infuraHttpClient = new InfuraHttpClient(apiKey: _options.InfuraApiKey);
 
@@ -49,21 +49,33 @@ namespace NinjaDiscordSalesBot
                         return;
                     }
 
-                    var transferLog = txReceipt.Logs
+                    var transferLogs = txReceipt.Logs
                         .Where(x => tokenDecoder.IsTransferEvent((string)x.Topics[0]))
                         .Where(x => x.Address.ToLower() == _options.CollectionContractAddress.ToLower())
-                        .FirstOrDefault();
+                        .ToList();
 
-                    if (transferLog == null)
+                    if (!transferLogs.Any())
                     {
                         return;
                     }
 
-                    tokenMetadata = tokenDecoder.GetTokenMetadata(transferLog);
-
-                    if (tokenMetadata?.TokenId == null)
+                    tokenMetadata = new TokenMetadata
                     {
-                        return;
+                        TokenIds = new List<int>(),
+                    };
+
+                    foreach (var transferLog in transferLogs)
+                    {
+                        var tokenTransferMetadata = tokenDecoder.GetTokenMetadata(transferLog);
+
+                        if (tokenTransferMetadata?.TokenId == null)
+                        {
+                            continue;
+                        }
+
+                        tokenMetadata.Buyer = tokenTransferMetadata.Buyer;
+                        tokenMetadata.Seller = tokenTransferMetadata.Seller;
+                        tokenMetadata.TokenIds.Add(tokenTransferMetadata.TokenId.Value);
                     }
 
                     tokenMetadata.TokenStandard = tokenDecoder.Name;
@@ -119,7 +131,7 @@ namespace NinjaDiscordSalesBot
         }
 
         private static DiscordMessage BuildDiscordMessage(TokenMetadata tokenMetadata) => new DiscordMessageBuilder()
-            .SetTitle(tokenMetadata.Name ?? tokenMetadata.TokenId?.ToString() ?? "Unknown")
+            .SetTitle(tokenMetadata.Name ?? (tokenMetadata.TokenIds?.Any() == true ? string.Join(",", tokenMetadata.TokenIds) : "Unknown"))
             .SetDescription($"Sold on {tokenMetadata.Marketplace}.")
             .SetImageUrl(tokenMetadata.ImageUrl)
             .SetTimestamp(DateTime.UtcNow)

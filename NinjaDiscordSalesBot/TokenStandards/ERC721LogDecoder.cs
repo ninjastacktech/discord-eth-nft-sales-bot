@@ -15,7 +15,7 @@ namespace NinjaDiscordSalesBot
 
         public string Name { get; } = "ERC-721";
 
-        public TokenMetadata? GetTokenMetadata(TransactionReceiptLog log)
+        public TokenTransferMetadata? GetTokenMetadata(TransactionReceiptLog log)
         {
             if (log.Topics.Length < 4)
             {
@@ -28,7 +28,7 @@ namespace NinjaDiscordSalesBot
 
             var addressTypeDecoder = new AddressTypeDecoder();
 
-            return new TokenMetadata()
+            return new TokenTransferMetadata()
             {
                 TokenId = new IntTypeDecoder().Decode<int>(tokenIdTopic.HexToByteArray()),
                 Seller = addressTypeDecoder.Decode<string>(from.HexToByteArray()),

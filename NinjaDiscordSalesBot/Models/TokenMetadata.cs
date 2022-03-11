@@ -1,5 +1,14 @@
 ﻿namespace NinjaDiscordSalesBot
 {
+    public class TokenTransferMetadata
+    {
+        public int? TokenId { get; set; }
+
+        public string? Seller { get; set; }
+
+        public string? Buyer { get; set; }
+    }
+
     public class TokenMetadata
     {
         public string? Name { get; set; }
@@ -8,7 +17,7 @@
 
         public string? ExternalUrl { get; set; }
 
-        public int? TokenId { get; set; }
+        public List<int>? TokenIds { get; set; }
 
         public string? TokenStandard { get; set; }
 
