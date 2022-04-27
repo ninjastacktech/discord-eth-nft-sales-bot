@@ -14,7 +14,6 @@ Currently supporting:
 
 Built with 💙 and:
 - [NinjaWebSocket](https://github.com/ninjastacktech/ninja-websocket-net) - Lightweight, user-friendly WebSocket APIs
-- [OpenSeaHttpClient](https://github.com/ninjastacktech/opensea-net) - SDK for the OpenSea marketplace API
 - [Netherum.ABI](https://github.com/Nethereum/Nethereum) - Encode/Decode event log topics & data
 
 ## Usage
