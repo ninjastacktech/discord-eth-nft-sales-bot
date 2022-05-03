@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nethereum.ABI" Version="4.3.0" />
-    <PackageReference Include="Ninja.WebSocketClient" Version="1.0.4" />
+    <PackageReference Include="Ninja.WebSocketClient" Version="1.0.5" />
   </ItemGroup>
 
 </Project>
